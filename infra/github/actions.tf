@@ -6,7 +6,10 @@ resource "github_actions_repository_permissions" "this" {
   allowed_actions_config {
     github_owned_allowed = true
     verified_allowed     = true
-    patterns_allowed     = []
+    patterns_allowed = [
+      "gitleaks/gitleaks-action@*",
+      "golang/govulncheck-action@*",
+    ]
   }
 }
 
