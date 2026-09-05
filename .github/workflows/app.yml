@@ -52,7 +52,12 @@ jobs:
         run: |
           docker run --rm -v "${{ github.workspace }}:/tf" \
             bridgecrew/checkov@sha256:7407699a91a556849ae66e05c3753f58cf0ce922aa6ddfac7839aad4f390c016 \
-            -d /tf -o sarif --output-file-path /tf --compact
+            -d /tf -o sarif --output-file-path /tf --compact \
+            --skip-check CKV_GIT_1,CKV2_GIT_1
+          # CKV_GIT_1 (repo must be private): repo is deliberately public for
+          # free CodeQL/Actions minutes.
+          # CKV2_GIT_1 (branch protection): enforced via
+          # github_repository_ruleset.main (infra/github/ruleset.tf).
 
       - name: Upload Checkov SARIF
         if: always()
