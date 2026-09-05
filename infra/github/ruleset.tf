@@ -15,6 +15,14 @@ resource "github_repository_ruleset" "main" {
     deletion            = true
     required_signatures = true
 
+    required_status_checks {
+      strict_required_status_checks_policy = true
+
+      required_check {
+        context = "scan"
+      }
+    }
+
     pull_request {
       # GitHub never lets an author approve their own PR.
       # Raise to 1+ if a collaborator joins.
