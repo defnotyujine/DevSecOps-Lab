@@ -1,0 +1,4 @@
+**/playbooks/roles/*
+**.ansible.cfg*
+**.planning*
+**.env/*
