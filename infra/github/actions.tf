@@ -9,6 +9,7 @@ resource "github_actions_repository_permissions" "this" {
     patterns_allowed = [
       "gitleaks/gitleaks-action@*",
       "golang/govulncheck-action@*",
+      "sigstore/cosign-installer@*",
     ]
   }
 }
