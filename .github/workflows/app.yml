@@ -65,3 +65,41 @@ jobs:
         with:
           sarif_file: results_sarif.sarif
           category: checkov
+
+  build-image:
+    needs: scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install conftest
+        run: |
+          curl -sLO https://github.com/open-policy-agent/conftest/releases/download/v0.70.0/conftest_0.70.0_Linux_x86_64.tar.gz
+          echo "e738506fd808f7dc9794ce8e325f89b14932891a4841fe45f1f24c4a9bb3ed96  conftest_0.70.0_Linux_x86_64.tar.gz" | sha256sum -c -
+          tar xzf conftest_0.70.0_Linux_x86_64.tar.gz conftest
+          sudo mv conftest /usr/local/bin/
+
+      - name: Conftest (Containerfile policy)
+        run: conftest test --policy policy/ --parser dockerfile app/Containerfile
+
+      - name: Build image
+        run: podman build -t app:${{ github.sha }} -f app/Containerfile app/
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push by digest
+        id: push
+        run: |
+          podman push --digestfile=/tmp/digest \
+            app:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/devsecops-lab/app:${{ github.sha }}
+          echo "digest=$(cat /tmp/digest)" >> "$GITHUB_OUTPUT"
